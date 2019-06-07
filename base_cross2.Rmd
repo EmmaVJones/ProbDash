@@ -1,0 +1,35 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(crosstalk)
+library(d3scatter)
+source('global.R')
+# bring in 2018 IR ProbMon CDF results
+#prob <- read_csv('data/allCDF.csv') %>%
+#  filter(!is.na(Subpopulation), !is.na(Indicator))
+
+# Statewide for practice
+#state <- filter(prob, Subpopulation == 'Virginia')
+#saveRDS(state, 'data/state.RDS')
+state <- readRDS('data/state.RDS')
+
+#shared data for html widgets
+shared_prob <- SharedData$new(state)#, ~Subpopulation)
+```
+
+
+### Chart 1
+    
+```{r statewide}
+filter_select("indicator", "Choose an Indicator", shared_prob, ~Indicator)
+d3scatter(shared_prob, ~Value, ~Estimate.P, ~Indicator)
+```
+
+
+

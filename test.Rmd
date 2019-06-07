@@ -1,0 +1,79 @@
+---
+title: "Chart Stack (Scrolling)"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+---
+    
+    
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(crosstalk)
+library(d3scatter)
+library(plotly)
+source('global.R')
+# bring in 2018 IR ProbMon CDF results
+prob <- read_csv('data/allCDF.csv') %>%
+  filter(!is.na(Subpopulation), !is.na(Indicator))
+
+# Statewide for practice
+state <- filter(prob, Subpopulation == 'Virginia')
+
+#shared data for html widgets
+shared_prob <- SharedData$new(state)#, ~Subpopulation)
+```
+
+### Chart 1
+    
+```{r, fig.height=4}
+
+#hd <- highlight_key(d, ~patient)
+
+# Create a "repeated measures" plot
+#p <- plot_ly(hd, x = ~visit, y = ~perc, color = I("black"),
+#             text = ~paste("Patient:", patient)) %>%
+#  group_by(patient) %>%
+#  add_trace(mode = "markers+lines")
+
+#shared <- highlight_key(state, ~Subpopulation)
+#plot_ly(shared, ~Value, ~Estimate.P)%>%
+#    add_trace(mode = "markers")
+
+
+
+# options(persistent = TRUE)
+
+p <- ggplot(shared_prob, aes(Value, Estimate.P)) +
+  geom_point(aes(label=Value)) +
+  theme_void() 
+
+
+ # ggplotly(p) %>%
+#    highlight(color = "red",on = "plotly_click")
+
+bscols(widths = c(3,NA),
+  list(
+    #filter_select("subpop", "Choose a Subpopulation", shared_prob, ~Subpopulation),
+    filter_select("indicator", "Choose an Indicator", shared_prob, ~Indicator)
+
+  ),
+  ggplotly(p)
+  #ggplotly(shared_prob, ~Value, ~Estimate.P)%>%
+  #  add_trace(mode = "markers")#,
+  #d3scatter(shared_prob, ~Value, ~Estimate.P, ~Indicator, width="100%", height=1000)
+         
+  #d3scatter(shared_prob, ~hp, ~qsec, ~factor(cyl), width="100%", height=250)
+)
+```
+    
+### Chart 2
+
+```{r}
+```
+
+### Chart 3
+
+```{r}
+```
