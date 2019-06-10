@@ -1,0 +1,78 @@
+---
+title: "ProbMon TP Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    vertical_layout: scroll
+    
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(crosstalk)
+library(d3scatter)
+library(plotly)
+source('global.R')
+# bring in 2018 IR ProbMon CDF results
+prob <- read_csv('data/allCDF.csv') %>%
+  filter(!is.na(Subpopulation), !is.na(Indicator))
+
+
+percentileSubpop <- function(indicatorDataset, subpopulationDesired, indicatorLookup){
+  results <- data.frame(Percentile= NA, MoE = NA)
+  for(i in 1:length(subpopulationDesired)){
+    rawDat <- filter(indicatorDataset, Subpopulation == subpopulationDesired[i]) %>%
+      mutate(MoE.P = StdError.P * 1.96) %>%
+      select(Value,Estimate.P, MoE.P) %>% as.data.frame()
+    results[i,] <- data.frame(Percentile= as.numeric(vlookup(indicatorLookup,rawDat, 2, TRUE)), 
+                              MoE = as.numeric(vlookup(indicatorLookup,rawDat, 3, TRUE)))
+  }
+  results <- mutate(results, Subpopulation = subpopulationDesired) %>% dplyr::select(Subpopulation, everything())
+  return(results)
+}
+
+TP <- filter(prob, Indicator == 'TP')
+```
+
+Sidebar {.sidebar}
+=====================================
+<br><br><br><br><br>
+This is a sidebar. And it is global so it is present everywhere.
+
+This dashboard currently only sifts through Total Phosphorus data from 2001-2016 Freshwater Probabilistic Monitoring data, but it serves as a model for exploratory data analysis methods that my be useful if built out across all Prob parameters and subpopulations. The benefit of this tool is its interactive nature while not requiring a server, thus maintenance and sharing are minimal; however, programming on the front end is heavy.
+
+
+
+Statewide
+=====================================  
+
+This is where we analyze TP statewide. Use the slider input to visualize TP statewide by certain measures.
+
+
+
+### Statewide Filtering by Measure
+    
+```{r statewide by Measure}
+# Pre data manipulation
+vaTP <- filter(TP, Subpopulation == 'Virginia') %>%
+  highlight_key()
+
+# CDF Curve
+#list(
+  #filter_select("subpop2", "Select a subpopulation", shared_Basin2, ~Subpopulation),
+  filter_slider('TPval', 'Select a limit', vaTP, ~Value)#,
+  d3scatter(vaTP, ~Value, ~Estimate.P,  width="60%", height=400)#,
+
+#)
+
+
+
+# barplot
+#plot_ly(vaTP, x = ~Subpopulation, y = ~Percentile, type = 'bar' , 
+#                   hoverinfo="text", text=~paste(sep="<br>",
+#                                      paste("Supopulation: ",Subpopulation),
+#                                      paste("Percentile:", format(Percentile, digits = 2), 
+#                                            "+/-", format(MoE, digits = 2))),
+#        error_y = ~list(array = MoE,
+#                             color = '#000000'))
+```

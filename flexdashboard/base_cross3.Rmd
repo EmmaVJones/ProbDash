@@ -1,0 +1,173 @@
+---
+title: "Untitled"
+output: 
+  flexdashboard::flex_dashboard
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(crosstalk)
+library(d3scatter)
+library(plotly)
+source('global.R')
+# bring in 2018 IR ProbMon CDF results
+prob <- read_csv('data/allCDF.csv') %>%
+  filter(!is.na(Subpopulation), !is.na(Indicator))
+
+
+percentileSubpop <- function(indicatorDataset, subpopulationDesired, indicatorLookup){
+  results <- data.frame(Percentile= NA, MoE = NA)
+  for(i in 1:length(subpopulationDesired)){
+    rawDat <- filter(indicatorDataset, Subpopulation == subpopulationDesired[i]) %>%
+      mutate(MoE.P = StdError.P * 1.96) %>%
+      select(Value,Estimate.P, MoE.P) %>% as.data.frame()
+    results[i,] <- data.frame(Percentile= as.numeric(vlookup(indicatorLookup,rawDat, 2, TRUE)), 
+                              MoE = as.numeric(vlookup(indicatorLookup,rawDat, 3, TRUE)))
+  }
+  results <- mutate(results, Subpopulation = subpopulationDesired) %>% dplyr::select(Subpopulation, everything())
+  return(results)
+}
+
+basinSelection <- c("Roanoke Basin", "James Basin", "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York")
+
+# Limit to just VSCI data
+VSCI <- filter(prob, Indicator == 'VSCIVCPMI') %>%
+  filter(Subpopulation %in% basinSelection)
+  
+  
+#shared data for html widgets
+shared_VSCI <- SharedData$new(VSCI)
+```
+
+
+### VSCI by Basin
+
+First build function that takes in an indicator (VSCI), a subpopulation list (basins), and an indicator threshold and split out a dataframe with those percentiles and error bars.
+```{r function build, eval=FALSE}
+
+indicatorDataset <- VSCI
+subpopulationDesired <- 'Roanoke Basin'#c('Roanoke Basin', 'James Basin')
+indicatorLookup <- 60
+
+percentileSubpop <- function(indicatorDataset, subpopulationDesired, indicatorLookup){
+  results <- data.frame(Percentile= NA, MoE = NA)
+  for(i in 1:length(subpopulationDesired)){
+    rawDat <- filter(indicatorDataset, Subpopulation == subpopulationDesired[i]) %>%
+      mutate(MoE.P = StdError.P * 1.96) %>%
+      select(Value,Estimate.P, MoE.P) %>% as.data.frame()
+    results[i,] <- data.frame(Percentile= as.numeric(vlookup(indicatorLookup,rawDat, 2, TRUE)), 
+                              MoE = as.numeric(vlookup(indicatorLookup,rawDat, 3, TRUE)))
+  }
+  results <- mutate(results, Subpopulation = subpopulationDesired) %>% dplyr::select(Subpopulation, everything())
+  return(results)
+}
+
+percentileSubpop(VSCI, 'James Basin', 60)
+
+percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin'), 60)
+
+
+basinVSCI <- percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin',  "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York"), 60)
+p <- ggplot(basinVSCI,aes(Subpopulation,Percentile))+
+  geom_bar(stat='identity', fill="steelblue")+
+  labs(title="Percentile by Basins, VSCI = 60", x="Basin", y = "Percentile") +
+  #geom_text(aes(label=paste(format(Percentile,digits=3),"%",sep="")), vjust=2, color="white", size=3.5)+
+  theme_minimal()+
+  theme(legend.position="none",plot.title = element_text(hjust = 0.5))+ # no legend, center title
+  theme( # remove the vertical grid lines
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.x = element_blank(),
+    # explicitly set the horizontal lines (or they will disappear too)
+    panel.grid.major.y = element_line( size=.1, color="black" ),
+    panel.grid.minor = element_blank(),panel.background = element_blank(),
+    axis.line = element_line(colour = "black"))#+ # no background grid
+
+ggplotly(p)
+```
+
+
+```{r just plotly try, eval=FALSE}
+plot_ly(basinVSCI, x = ~Subpopulation, y = ~Percentile, type = 'bar' , 
+        hoverinfo="text", text=~paste(sep="<br>",
+                                      paste("Supopulation: ",Subpopulation),
+                                      paste("Percentile:", format(Percentile, digits = 2))))
+        
+```
+    
+    
+
+    
+    
+So maybe make a function that takes in an indicator (VSCI), a subpopulation list (basins), and an indicator threshold and split out a dataframe with those percentiles and error bars, then i can use that dataset for my shared dataset for html selection and plotting.
+    
+    
+```{r statewide, eval=FALSE}
+filter_slider("threshold", "Choose an VSCI threshold", shared_VSCI, ~Value)
+filter_checkbox('subpopVSCI', 'Choose subpopulations to plot', shared_VSCI, ~Subpopulation, inline = TRUE)
+#d3scatter(shared_VSCI, ~Value, ~Estimate.P, ~Indicator)
+
+```
+
+
+```{r try with shared data}
+
+
+basinVSCI1 <- percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin',  "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York"), 100) %>% mutate(cutoff=100, narrative= 'Excellent Condition  (VSCI < 100)')
+basinVSCI2 <- percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin',  "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York"), 72) %>% mutate(cutoff=72, narrative= 'Good Condition  (VSCI < 72)')
+basinVSCI3 <- percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin',  "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York"), 60)%>% mutate(cutoff=60, narrative= 'Moderate Stress (VSCI < 60)')
+basinVSCI4 <- percentileSubpop(VSCI, c('Roanoke Basin', 'James Basin',  "Potomac-Shenandoah", "Rappahannock-York", "New", "Chowan",
+                    "Tennessee", "Holston", "Big Sandy", "Clinch-Powell", "Potomac", "Shenandoah",
+                    "Rappahannock", "York"), 42)%>% mutate(cutoff=42, narrative= 'Severely Stressed (VSCI < 42)')
+basinVSCI <- rbind(#basinVSCI1, basinVSCI2,
+  basinVSCI3)#, basinVSCI4)
+
+
+
+
+
+
+shared_Basin <- highlight_key(basinVSCI3)
+shared_Basin2 <- highlight_key(basinVSCI4)
+plotly1 <- plot_ly(shared_Basin, x = ~Subpopulation, y = ~Percentile, type = 'bar' , 
+                   hoverinfo="text", text=~paste(sep="<br>",
+                                      paste("Supopulation: ",Subpopulation),
+                                      paste("Percentile:", format(Percentile, digits = 2), 
+                                            "+/-", format(MoE, digits = 2))),
+        error_y = ~list(array = MoE,
+                             color = '#000000'))
+
+bscols(
+  #filter_checkbox("cutoff", "Choose a Condition Class", shared_Basin, ~narrative),
+  filter_select("subpop", "Select a subpopulation", shared_Basin, ~Subpopulation),
+  #plotly1, 
+  plot_ly(shared_Basin, x = ~Subpopulation, y = ~Percentile, type = 'bar' , 
+                   hoverinfo="text", text=~paste(sep="<br>",
+                                      paste("Supopulation: ",Subpopulation),
+                                      paste("Percentile:", format(Percentile, digits = 2), 
+                                            "+/-", format(MoE, digits = 2))),
+        error_y = ~list(array = MoE,
+                             color = '#000000')),
+  filter_select("subpop2", "Select a subpopulation", shared_Basin2, ~Subpopulation),
+plot_ly(shared_Basin2, x = ~Subpopulation, y = ~Percentile, type = 'bar' , 
+                   hoverinfo="text", text=~paste(sep="<br>",
+                                      paste("Supopulation: ",Subpopulation),
+                                      paste("Percentile:", format(Percentile, digits = 2), 
+                                            "+/-", format(MoE, digits = 2))),
+        error_y = ~list(array = MoE,
+                             color = '#000000')),
+  widths = c(12, 12)
+)
+
+```
+
