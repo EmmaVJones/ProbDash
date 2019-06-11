@@ -23,7 +23,10 @@ shinyUI(fluidPage(theme="yeti.css",
                                                         choices = unique(probCDF$Indicator)),
                                             radioButtons('radio','Choose a XXX', choices = c('Status','Trend','Percentile'))
                                           ),
-                                          mainPanel()),
+                                          mainPanel(
+                                            uiOutput('sliderUI'), br(),hr(), br(),
+                                            verbatimTextOutput('verbatim')
+                                          )),
                                  tabPanel('Raw Data'),
                                  tabPanel('About')
                       )))))

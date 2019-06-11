@@ -4,10 +4,6 @@ library(tidyverse)
 library(plotly)
 library(DT)
 
-# Read in Data
-probCDF <- read_csv('data/allCDF.csv') %>%
-  filter(!is.na(Indicator) | !is.na(Subpopulation))
-
 
 
 
