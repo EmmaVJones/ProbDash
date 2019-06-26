@@ -1,43 +1,3 @@
-source('global.R')
-
-# Read in Data
-probCDF <- read_csv('data/allCDF.csv') %>%
-  filter(!is.na(Indicator) | !is.na(Subpopulation)) %>% 
-  mutate(MoE = StdError.P * 1.96)
-
-
-parameterData1 <- filter(probCDF, Indicator == 'pH')
-
-parameterData2 <- filter(parameterData1, Subpopulation %in% c('Virginia',"Roanoke Basin","James Basin",
-                                                             "Potomac-Shenandoah","Rappahannock-York",
-                                                             "New","Chowan","Tennessee"))  %>%
-  mutate(ymin = Estimate.P - (MoE)/2, ymax = Estimate.P + (MoE)/2)
-
-plot_ly(parameterData2) %>%
-  add_trace(data = parameterData2, x = ~Value, y = ~Estimate.P, mode = 'line', color = ~Subpopulation, 
-            hoverinfo = 'text', text = ~paste(sep = '<br>',
-                                             paste(unique(Indicator),":", Value), # add units!!!!!!!!!! see benthic stressor tool data manipulation??
-                                             paste('Percentile:',format(Estimate.P,digits=2), '+/-', format(MoE, digits = 2) )))
-
-
-parameterData3 <- percentileSubpop(parameterData2, c('Virginia',"Roanoke Basin","James Basin",
-                             "Potomac-Shenandoah","Rappahannock-York",
-                             "New","Chowan","Tennessee"), 9.6)
-plot_ly(parameterData3, x = ~Subpopulation, y = ~Percentile, type = 'bar', 
-        width = .10,
-        hoverinfo="text", text=~paste(sep="<br>",
-                                      paste("Subpopulation: ", Subpopulation),
-                                      #paste("Threshold Value: ",thresholdValue()),
-                                      paste("Percentile: ", Percentile, ' +/- ', MoE))) %>%
-  layout(#showlegend=FALSE,
-    yaxis=list(title="Percentile"),
-    xaxis=list(title="Subpopulation"))
-
-
-
-
-
-
 statusSuperbasinUI <- function(id){
   ns <- NS(id)
   tagList(
@@ -48,8 +8,8 @@ statusSuperbasinUI <- function(id){
     )
   )
 }
-    
-      
+
+
 
 statusSuperbasin <- function(input,output,session, parameterData, thresholdValue){
   ns <- session$ns
@@ -57,16 +17,19 @@ statusSuperbasin <- function(input,output,session, parameterData, thresholdValue
   superB <- reactive({
     req(parameterData)
     filter(parameterData, Subpopulation %in% c('Virginia',"Roanoke Basin","James Basin",
-                                               "Potomac-Shenandoah","Rappahannock-York",
-                                               "New","Chowan","Tennessee"))  %>%
+                                               "Potomac-Shenandoah","Rappahannock-York")) %>%#,"James Basin",
+                                               #"Potomac-Shenandoah","Rappahannock-York",
+                                               #"New","Chowan","Tennessee"))  %>%
       mutate(ymin = Estimate.P - MoE, ymax = Estimate.P + MoE) })
   
   superBox <- reactive({
     req(thresholdValue())
-    print(percentileSubpop(superB(), c('Virginia'), thresholdValue())  )})#,"Roanoke Basin","James Basin",
-                                      #"Potomac-Shenandoah","Rappahannock-York",
-                                      #"New","Chowan","Tennessee"), thresholdValue())  )})
-
+    print(percentileSubpop(superB(), c('Virginia',"Roanoke Basin","James Basin",
+                                       "Potomac-Shenandoah","Rappahannock-York"), thresholdValue()) )})
+  #,"Roanoke Basin","James Basin",
+                                       #"Potomac-Shenandoah","Rappahannock-York",
+                                       #"New","Chowan","Tennessee"), thresholdValue())  )})
+  
   
   output$plot <- renderPlotly({
     if(input$radio == 'CDF'){
@@ -118,35 +81,3 @@ statusSuperbasin <- function(input,output,session, parameterData, thresholdValue
     }
   })
 }
-
-ui <- fluidPage( uiOutput('parameterChoiceUI'),
-                 uiOutput('sliderUI'),
-                 statusSuperbasinUI('super') ,
-                 dataTableOutput('table'))
-
-server <- function(input,output,session){
-  #Parameter Choice on UI
-  output$parameterChoiceUI <- renderUI({
-    selectInput('parameterChoice','Choose a parameter to analyze',
-                choices = unique(probCDF$Indicator))
-  })
-  
-  # Select Parameter
-  parameter <- reactive({
-    req(input$parameterChoice)
-    filter(probCDF, Indicator == input$parameterChoice)  })
-  
-  output$sliderUI <- renderUI({
-    #req(parameter())
-    sliderInput('slider','Choose threshold value', min = min(parameter()$Value), max = max(parameter()$Value),
-                value = median(filter(parameter(), Subpopulation == 'Virginia')$Value))})
- 
-  callModule(statusSuperbasin,'super', parameter(), reactive(input$slider))
-
-  output$table <- renderDataTable({
-    DT::datatable( parameter()) })
-
-}
-
-shinyApp(ui, server)
-

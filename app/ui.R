@@ -19,13 +19,15 @@ shinyUI(fluidPage(theme="yeti.css",
                                  tabPanel('Dashboard',
                                           sidebarPanel(
                                             br(),br(),
-                                            selectInput('parameterChoice','Choose a parameter to analyze',
-                                                        choices = unique(probCDF$Indicator)),
+                                            uiOutput('parameterChoiceUI'),
                                             radioButtons('radio','Choose a XXX', choices = c('Status','Trend','Percentile'))
                                           ),
                                           mainPanel(
                                             uiOutput('sliderUI'), br(),hr(), br(),
-                                            verbatimTextOutput('verbatim')
+                                            verbatimTextOutput('verbatim'),
+                                            fluidRow(
+                                              wellPanel(statusSuperbasinUI('super'))
+                                            )
                                           )),
                                  tabPanel('Raw Data'),
                                  tabPanel('About')

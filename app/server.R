@@ -16,6 +16,12 @@ shinyServer(function(input, output, session) {
   
   ############### Status Tab Panel
   
+  #Parameter Choice on UI
+  output$parameterChoiceUI <- renderUI({
+    selectInput('parameterChoice','Choose a parameter to analyze',
+                choices = unique(probCDF$Indicator))
+  })
+  
   # Select Parameter
   parameter <- reactive({
     req(input$parameterChoice)
@@ -28,8 +34,13 @@ shinyServer(function(input, output, session) {
   
   output$verbatim <- renderPrint({
     req(parameter)
-    head(parameter())
+    percentileSubpop(parameter(), c('Virginia',"Roanoke Basin","James Basin",
+                                    "Potomac-Shenandoah","Rappahannock-York"), input$slider)
+    #head(parameter())
+    #input$slider
+    #print(class(input$slider))
   })
   
+  callModule(statusSuperbasin, 'super', parameter(), reactive(input$slider))
   
 })
