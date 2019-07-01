@@ -17,18 +17,32 @@ shinyUI(fluidPage(theme="yeti.css",
                       ),
                       navbarPage("VDEQ Probabilistic Monitoring EDA Tool",
                                  tabPanel('Dashboard',
-                                          sidebarPanel(
-                                            br(),br(),
+                                          sidebarPanel(width = 3,
                                             uiOutput('parameterChoiceUI'),
-                                            radioButtons('radio','Choose a XXX', choices = c('Status','Trend','Percentile'))
+                                            radioButtons('radio','Analyze by...', choices = c('Status','Trend')),
+                                            uiOutput('sliderUI')
                                           ),
                                           mainPanel(
-                                            uiOutput('sliderUI'), br(),hr(), br(),
-                                            verbatimTextOutput('verbatim'),
-                                            fluidRow(
-                                              wellPanel(statusSuperbasinUI('super')),
-                                              wellPanel(statusSubbasinUI('sub'))
-                                            )
+                                            conditionalPanel(condition = "input.radio == 'Status'",
+                                                             tabsetPanel(
+                                                               tabPanel('Superbasin', statusSuperbasinUI('super')),
+                                                               tabPanel('Subbasin', statusSubbasinUI('sub')),
+                                                               tabPanel('Ecoregion', statusEcoregionUI('eco')),
+                                                               tabPanel('Bioregion', statusBioregionUI('bio')),
+                                                               tabPanel('Stream Order', statusStreamOrderUI('streamOrder')),
+                                                               tabPanel('Watershed Size', statusWatershedSizeUI('watershedSize')),
+                                                               tabPanel('Stream Size', statusStreamSizeUI('streamSize')))  ),
+                                            conditionalPanel(condition = "input.radio == 'Trend'",
+                                                             tabsetPanel(
+                                                               tabPanel('IR Window'),# statusSuperbasinUI('super')),
+                                                               tabPanel('Year'),
+                                                               tabPanel('Bay / NonBay'),
+                                                               tabPanel('VSCI by Year'),
+                                                               tabPanel('Biophase'),
+                                                               tabPanel('Biophase x Stream Size')))
+                                                               
+                                            #verbatimTextOutput('verbatim'),
+                                            
                                           )),
                                  tabPanel('Raw Data'),
                                  tabPanel('About')

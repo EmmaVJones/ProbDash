@@ -1,4 +1,5 @@
 library(shiny)
+library(shinydashboard)
 library(shinyjs)
 library(tidyverse)
 library(plotly)
@@ -6,7 +7,8 @@ library(DT)
 
 
 
-modulesToReadIn <- c('Status_Superbasin','Status_Subbasin')
+modulesToReadIn <- c('Status_Superbasin','Status_Subbasin','Status_Ecoregion', 'Status_Bioregion',
+                     'Status_StreamOrder','status_WatershedSize', 'status_StreamSize')
 for (i in 1:length(modulesToReadIn)){
   source(paste('appModules/',modulesToReadIn[i],'Module.R',sep=''))
 }
@@ -87,3 +89,9 @@ superBasinSubpopulations <- c('Virginia',"Roanoke Basin","James Basin",
 subBasinSubpopulations <- c('Virginia',"Roanoke Basin","James Basin",
                             "Potomac","Shenandoah","Rappahannock","York",
                             "New","Chowan","Holston", "Big Sandy", "Clinch-Powell")
+ecoregionSubpopulations <- c("Piedmont", "Northern Piedmont", "Central Appalachian Ridges and Valleys",
+                             "Southeastern Plains", "Blue Ridge Mountains", "Central Appalachians")
+bioregionSubpopulations <- c("Mountain Bioregion", "Piedmont Bioregion", "Coast Bioregion"  )
+streamOrderSubpopulations <- c("First Order", "Second Order", "Third Order", "Fourth Order", "Fifth Order" )
+watershedSizeSubpopulations <- c("<1 square mile", "1 to 10 square mile", "10 to 200 square mile", ">200 square mile")
+streamSizeSubpopulations <- c("Small", "Medium", "Large")

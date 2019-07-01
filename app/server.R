@@ -29,18 +29,9 @@ shinyServer(function(input, output, session) {
   
   output$sliderUI <- renderUI({
     req(parameter())
-    sliderInput('slider','Choose threshold value', min = min(parameter()$Value), max = max(parameter()$Value),
+    sliderInput('slider','Choose threshold value (for barplot only)', min = min(parameter()$Value), max = max(parameter()$Value),
                 value = median(filter(parameter(), Subpopulation == 'Virginia')$Value))})
-  
-  #output$verbatim <- renderPrint({
-  #  req(parameter)
-  #  percentileSubpop(parameter(), c('Virginia',"Roanoke Basin","James Basin",
-  #                                  "Potomac-Shenandoah","Rappahannock-York"), input$slider)
-    #head(parameter())
-    #input$slider
-    #print(class(input$slider))
-  #})
-  
+
   superBasinBox <- reactive({
     req(input$slider, parameter())
     percentileSubpop(filter(parameter(), Subpopulation %in% superBasinSubpopulations),
@@ -49,11 +40,45 @@ shinyServer(function(input, output, session) {
     req(input$slider, parameter())
     percentileSubpop(filter(parameter(), Subpopulation %in% subBasinSubpopulations),
                            subBasinSubpopulations, input$slider)  })
-  
+  ecoregionBox  <- reactive({
+    req(input$slider, parameter())
+    percentileSubpop(filter(parameter(), Subpopulation %in% ecoregionSubpopulations),
+                           ecoregionSubpopulations, input$slider)  })
+  bioregionBox  <- reactive({
+    req(input$slider, parameter())
+    percentileSubpop(filter(parameter(), Subpopulation %in% bioregionSubpopulations),
+                           bioregionSubpopulations, input$slider)  })
+  streamOrderBox  <- reactive({
+    req(input$slider, parameter())
+    z <- percentileSubpop(filter(parameter(), Subpopulation %in% streamOrderSubpopulations),
+                     streamOrderSubpopulations, input$slider)  
+    z$Subpopulation <- factor(z$Subpopulation, levels = c("First Order", "Second Order", "Third Order", "Fourth Order", "Fifth Order" ), ordered = T)
+    return(z)
+  })
+  watershedSizeBox  <- reactive({
+    req(input$slider, parameter())
+    z <- percentileSubpop(filter(parameter(), Subpopulation %in% watershedSizeSubpopulations),
+                          watershedSizeSubpopulations, input$slider)  
+    z$Subpopulation <- factor(z$Subpopulation, levels = c("<1 square mile", "1 to 10 square mile", "10 to 200 square mile", ">200 square mile"), ordered = T)
+    return(z)
+  })
+  streamSizeBox  <- reactive({
+    req(input$slider, parameter())
+    z <- percentileSubpop(filter(parameter(), Subpopulation %in% streamSizeSubpopulations),
+                          streamSizeSubpopulations, input$slider)  
+    z$Subpopulation <- factor(z$Subpopulation, levels = c("Small", "Medium", "Large"), ordered = T)
+    return(z)
+  })
   
  
   
   
   callModule(statusSuperbasin,'super', parameter, superBasinBox, reactive(input$slider))
   callModule(statusSubbasin,'sub', parameter, subBasinBox, reactive(input$slider))
+  callModule(statusEcoregion,'eco', parameter, ecoregionBox, reactive(input$slider))
+  callModule(statusBioregion,'bio', parameter, bioregionBox, reactive(input$slider))
+  callModule(statusStreamOrder,'streamOrder', parameter, streamOrderBox, reactive(input$slider))
+  callModule(statusWatershedSize,'watershedSize', parameter, watershedSizeBox, reactive(input$slider))
+  callModule(statusStreamSize,'streamSize', parameter, streamSizeBox, reactive(input$slider))
+  
 })
