@@ -1,5 +1,4 @@
 library(shiny)
-library(shinydashboard)
 library(shinyjs)
 library(tidyverse)
 library(plotly)
@@ -7,10 +6,15 @@ library(DT)
 
 
 
-modulesToReadIn <- c('Status_Superbasin','Status_Subbasin','Status_Ecoregion', 'Status_Bioregion',
-                     'Status_StreamOrder','status_WatershedSize', 'status_StreamSize')
-for (i in 1:length(modulesToReadIn)){
-  source(paste('appModules/',modulesToReadIn[i],'Module.R',sep=''))
+statusModulesToReadIn <- c('Status_Superbasin','Status_Subbasin','Status_Ecoregion', 'Status_Bioregion',
+                           'Status_StreamOrder','status_WatershedSize', 'status_StreamSize')
+trendModulesToReadIn <- c('Trend_IRWindow','Trend_Year','Trend_BayNonBay','Trend_VSCIyear',
+                          'Trend_Biophase','Trend_BiophaseXStreamSize')
+for (i in 1:length(statusModulesToReadIn)){
+  source(paste('appModules/',statusModulesToReadIn[i],'Module.R',sep=''))
+}
+for (i in 1:length(trendModulesToReadIn)){
+  source(paste('appModules/',trendModulesToReadIn[i],'Module.R',sep=''))
 }
 
 
@@ -95,3 +99,12 @@ bioregionSubpopulations <- c("Mountain Bioregion", "Piedmont Bioregion", "Coast 
 streamOrderSubpopulations <- c("First Order", "Second Order", "Third Order", "Fourth Order", "Fifth Order" )
 watershedSizeSubpopulations <- c("<1 square mile", "1 to 10 square mile", "10 to 200 square mile", ">200 square mile")
 streamSizeSubpopulations <- c("Small", "Medium", "Large")
+IRWindowSubpopulations <- c("IR2008", "IR2010", "IR2012", "IR2014", "IR2016", "IR2018"  )
+yearSubpopulations <- c("Year 2001", "Year 2002", "Year 2003", "Year 2004", "Year 2005", "Year 2006", 
+                        "Year 2007", "Year 2008", "Year 2009", "Year 2010", "Year 2011", "Year 2012", 
+                        "Year 2013", "Year 2014", "Year 2015", "Year 2016")
+bayNonBaySubpopulations <- c("Bay Watersheds 2001-2016", "Non-Bay Watersheds 2001-2016", "Bay Watersheds 2001-2009", 
+                             "Bay Watersheds 2009-2016", "Non-Bay Watersheds 2001-2009", "Non-Bay Watersheds 2009-2016")
+VSCIyearSubpopulations <- c("VSCI Scores 2001-2004", "VSCI Scores 2005-2008", "VSCI Scores 2009-2012", "VSCI Scores 2013-2016")
+biophaseSubpopulations <- c("Phase One 2001-2009","Phase Two 2009-2016")
+biophaseXStreamSizeSubpopulations<- c("Phase1Small", "Phase2Small", "Phase1Medium", "Phase2Medium", "Phase1Large", "Phase2Large")

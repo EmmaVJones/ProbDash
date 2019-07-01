@@ -16,6 +16,17 @@ shinyUI(fluidPage(theme="yeti.css",
                                  ".shiny-output-error:before { visibility: hidden; }"
                       ),
                       navbarPage("VDEQ Probabilistic Monitoring EDA Tool",
+                                 tabPanel('About',
+                                          h5("This tool is meant to expedite the data analysis process for each Integrated Reporting cycle.
+                                             This tool accepts data output directly from the 'HowToWrite2018IRProbMonChapter.Rmd' script, the 
+                                             same script that feeds into the automated reporting script, to streamline the analysis process prior
+                                             to autogenerating a final report."),
+                                          h5("It is advised that users work through the parameters of interest using the tabs on the status and 
+                                             trend subpopulation classes."),
+                                          h3(strong('Pro Tip: The threshold value only controls barplots.')),
+                                          h3(strong('Pro Tip: You can turn layers on and off in the interactive plotly plots by clicking on them in the legend.')),
+                                          br(), hr(), br(),
+                                          h4('Please contact Emma Jones (emma.jones@deq.virginia.gov) with any questions or concerns about the app.') ),
                                  tabPanel('Dashboard',
                                           sidebarPanel(width = 3,
                                             uiOutput('parameterChoiceUI'),
@@ -34,16 +45,17 @@ shinyUI(fluidPage(theme="yeti.css",
                                                                tabPanel('Stream Size', statusStreamSizeUI('streamSize')))  ),
                                             conditionalPanel(condition = "input.radio == 'Trend'",
                                                              tabsetPanel(
-                                                               tabPanel('IR Window'),# statusSuperbasinUI('super')),
-                                                               tabPanel('Year'),
-                                                               tabPanel('Bay / NonBay'),
-                                                               tabPanel('VSCI by Year'),
-                                                               tabPanel('Biophase'),
-                                                               tabPanel('Biophase x Stream Size')))
+                                                               tabPanel('IR Window', trendIRWindowUI('IRWindow')),
+                                                               tabPanel('Year', trendYearUI('year')),
+                                                               tabPanel('Year Groups', trendVSCIyearUI('VSCIyear')),
+                                                               tabPanel('Biophase', trendBiophaseUI('biophase')),
+                                                               tabPanel('Bay / NonBay', trendBayNonBayUI('bayNonBay')),
+                                                               tabPanel('Biophase x Stream Size', trendBiophaseXStreamSizeUI('biophaseX'))))
                                                                
                                             #verbatimTextOutput('verbatim'),
                                             
                                           )),
-                                 tabPanel('Raw Data'),
-                                 tabPanel('About')
+                                 tabPanel('Raw Data',
+                                          DT::dataTableOutput('rawData'))
+                                 
                       )))))
