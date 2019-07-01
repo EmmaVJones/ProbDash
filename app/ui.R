@@ -26,7 +26,8 @@ shinyUI(fluidPage(theme="yeti.css",
                                             uiOutput('sliderUI'), br(),hr(), br(),
                                             verbatimTextOutput('verbatim'),
                                             fluidRow(
-                                              wellPanel(statusSuperbasinUI('super'))
+                                              wellPanel(statusSuperbasinUI('super')),
+                                              wellPanel(statusSubbasinUI('sub'))
                                             )
                                           )),
                                  tabPanel('Raw Data'),

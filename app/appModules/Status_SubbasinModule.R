@@ -1,4 +1,4 @@
-statusSuperbasinUI <- function(id){
+statusSubbasinUI <- function(id){
   ns <- NS(id)
   tagList(
     wellPanel(
@@ -11,16 +11,15 @@ statusSuperbasinUI <- function(id){
 
 
 
-statusSuperbasin <- function(input,output,session, parameterData, barData, thresholdValue){
+statusSubbasin <- function(input,output,session, parameterData, barData, thresholdValue){
   ns <- session$ns
   
   cdfData <- reactive({
     req(parameterData)
-    filter(parameterData(), Subpopulation %in% superBasinSubpopulations)  %>%
+    filter(parameterData(), Subpopulation %in% subBasinSubpopulations)  %>%
       mutate(ymin = Estimate.P - MoE, ymax = Estimate.P + MoE) })
   
   output$plot <- renderPlotly({
-    
     if(input$radio %in% 'Boxplot'){
       plot_ly(cdfData(), x = ~Subpopulation, y = ~Value,  color = ~Subpopulation, type = "box") %>%
         layout( yaxis=list(title="Value"),xaxis=list(title="Subpopulation"))
@@ -32,13 +31,17 @@ statusSuperbasin <- function(input,output,session, parameterData, barData, thres
                                                     paste(unique(Indicator),":", Value), # add units!!!!!!!!!! see benthic stressor tool data manipulation??
                                                     paste('Percentile:',format(Estimate.P,digits=2), '+/-', format(MoE, digits = 2) ))) %>%
         addMoE(cdfData(),'Virginia') %>%
+        addMoE(cdfData(),'Big Sandy') %>%
         addMoE(cdfData(),'Chowan') %>%
+        addMoE(cdfData(),'Clinch-Powell') %>%
+        addMoE(cdfData(),'Holston') %>%
         addMoE(cdfData(),'James Basin') %>%
         addMoE(cdfData(),'New') %>%
-        addMoE(cdfData(),'Potomac-Shenandoah') %>%
-        addMoE(cdfData(),'Rappahannock-York') %>%
+        addMoE(cdfData(),'Potomac') %>%
+        addMoE(cdfData(),'Rappahannock') %>%
         addMoE(cdfData(),'Roanoke Basin') %>%
-        addMoE(cdfData(),'Tennessee') %>%
+        addMoE(cdfData(),'Shenandoah') %>%
+        addMoE(cdfData(),'York') %>%
         layout(#showlegend=FALSE,
           yaxis=list(title="Percentile"),
           xaxis=list(title="Subpopulation"))
@@ -54,6 +57,5 @@ statusSuperbasin <- function(input,output,session, parameterData, barData, thres
           yaxis=list(title="Percentile"),
           xaxis=list(title="Subpopulation"))
     }
-    
   })
 }

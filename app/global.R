@@ -6,7 +6,7 @@ library(DT)
 
 
 
-modulesToReadIn <- c('Status_Superbasin')
+modulesToReadIn <- c('Status_Superbasin','Status_Subbasin')
 for (i in 1:length(modulesToReadIn)){
   source(paste('appModules/',modulesToReadIn[i],'Module.R',sep=''))
 }
@@ -68,3 +68,22 @@ vlookup <- function(ref, #the value or values that you want to look for
   output
 }
 
+
+
+
+
+# add margin of error to plotly plots for each subpopulation efficiently
+addMoE <- function(p, dataset, subpopulation){
+  add_ribbons(p, data = filter(dataset, Subpopulation== subpopulation),
+              x = ~Value, ymin = ~ymin, ymax = ~ymax, line = list(color = 'rgba(7, 164, 181, 0.05)'),
+              fillcolor = 'rgba(7, 164, 181, 0.2)', name = paste(subpopulation," Margin of Error",sep=""), visible = 'legendonly')
+}
+
+# Define each subpopulation category for easy module building
+
+superBasinSubpopulations <- c('Virginia',"Roanoke Basin","James Basin",
+                              "Potomac-Shenandoah","Rappahannock-York",
+                              "New","Chowan","Tennessee")
+subBasinSubpopulations <- c('Virginia',"Roanoke Basin","James Basin",
+                            "Potomac","Shenandoah","Rappahannock","York",
+                            "New","Chowan","Holston", "Big Sandy", "Clinch-Powell")

@@ -32,15 +32,28 @@ shinyServer(function(input, output, session) {
     sliderInput('slider','Choose threshold value', min = min(parameter()$Value), max = max(parameter()$Value),
                 value = median(filter(parameter(), Subpopulation == 'Virginia')$Value))})
   
-  output$verbatim <- renderPrint({
-    req(parameter)
-    percentileSubpop(parameter(), c('Virginia',"Roanoke Basin","James Basin",
-                                    "Potomac-Shenandoah","Rappahannock-York"), input$slider)
+  #output$verbatim <- renderPrint({
+  #  req(parameter)
+  #  percentileSubpop(parameter(), c('Virginia',"Roanoke Basin","James Basin",
+  #                                  "Potomac-Shenandoah","Rappahannock-York"), input$slider)
     #head(parameter())
     #input$slider
     #print(class(input$slider))
-  })
+  #})
   
-  callModule(statusSuperbasin, 'super', parameter(), reactive(input$slider))
+  superBasinBox <- reactive({
+    req(input$slider, parameter())
+    percentileSubpop(filter(parameter(), Subpopulation %in% superBasinSubpopulations),
+                           superBasinSubpopulations, input$slider)  })
+  subBasinBox <- reactive({
+    req(input$slider, parameter())
+    percentileSubpop(filter(parameter(), Subpopulation %in% subBasinSubpopulations),
+                           subBasinSubpopulations, input$slider)  })
   
+  
+ 
+  
+  
+  callModule(statusSuperbasin,'super', parameter, superBasinBox, reactive(input$slider))
+  callModule(statusSubbasin,'sub', parameter, subBasinBox, reactive(input$slider))
 })
