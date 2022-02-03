@@ -1,11 +1,11 @@
 # script to functionalize micromap development
 # R 3.6.1
-
-#suppressPackageStartupMessages(library(tidyverse))#1.3.0
+# 
+# suppressPackageStartupMessages(library(tidyverse))#1.3.0
 # suppressPackageStartupMessages(library(sp)) #1.3-2
 # suppressPackageStartupMessages(library(rgdal)) #1.4-8
 # suppressPackageStartupMessages(library(micromap))#1.9.3
-
+# 
 # basinssmooth_sp <- readOGR('data/GIS','VAbasins_smoothNoChesPeeDee')# basin shapefile for micromaps (sp)
 # # data management for ecoregions to work
 # # had to drop coastal plain from ecoregion to get micromap to work since there is not enough data for estimates yet
@@ -14,8 +14,8 @@
 # # st_write(ecoregions, 'data/GIS/ecoregions_Micromap.shp')
 # ecoregions_sp <- readOGR('data/GIS','ecoregions_Micromap')# ecoregion shapefile for micromaps (sp)
 # # data management for subbasins to work
-# # vahusb <- st_read('C:/HardDriveBackup/GIS/Assessment/VAHUSB.shp') %>% 
-# #   st_transform(st_crs(st_read('data/GIS/ecoregions_Micromap.shp'))) %>% 
+# # vahusb <- st_read('C:/HardDriveBackup/GIS/Assessment/VAHUSB.shp') %>%
+# #   st_transform(st_crs(st_read('data/GIS/ecoregions_Micromap.shp'))) %>%
 # #   filter(VAHUSB_ %in% VAHUSBSubpopulations)
 # # st_write(vahusb, 'data/GIS/vahusb_Micromap.shp')
 # vahusb_sp <- readOGR('data/GIS','vahusb_Micromap')# vahusb shapefile for micromaps (sp)
@@ -25,11 +25,11 @@
 # map.tableBasin <- create_map_table(basinssmooth_sp,'BASIN')
 # map.tableEcoregion <- create_map_table(ecoregions_sp,'US_L3NAME')
 # map.tableVAHUSB <- create_map_table(vahusb_sp,'VAHUSB_')
-
-
-
-
-# VLOOKUP (Excel function hack) by Julin Maloof
+# 
+# 
+# 
+# 
+# ## VLOOKUP (Excel function hack) by Julin Maloof
 # vlookup <- function(ref, #the value or values that you want to look for
 #                     table, #the table where you want to look for it; will look in first column
 #                     column, #the column that you want the return data to come from,
@@ -38,7 +38,7 @@
 # {
 #   # 2020 addition, make tibbles dataframes
 #   table <- as.data.frame(table)
-#   
+# 
 #   if(!is.numeric(column) & !column %in% colnames(table)) {
 #     stop(paste("can't find column",column,"in table"))
 #   }
@@ -46,14 +46,14 @@
 #     if(!is.numeric(table[,1])) {
 #       stop(paste("The first column of table must be numeric when using range lookup"))
 #     }
-#     table <- table[order(table[,1]),] 
+#     table <- table[order(table[,1]),]
 #     index <- findInterval(ref,table[,1])
 #     if(larger) {
 #       index <- ifelse(ref %in% table[,1],index,index+1)
 #     }
 #     output <- table[index,column]
 #     output[!index <= dim(table)[1]] <- NA
-#     
+# 
 #   } else {
 #     output <- table[match(ref,table[,1]),column]
 #     output[!ref %in% table[,1]] <- NA #not needed?
@@ -63,7 +63,7 @@
 # }
 # 
 # # CDF data
-# dat <- read.csv('processedData/allCDF.csv')# CDF results
+# dat <- read.csv('data/IR2022/allCDF.csv')# CDF results
 
 
 # indicator information
@@ -273,18 +273,19 @@ dataOrgInterquartileRange <- function(dat, # CDF data with all indicators and su
     }
   return(statsbasin)
 }
-# organizedStats <- dataOrgInterquartileRange(dat, 
-#                                     c('Chowan', 'Rappahannock', 'York', 'Potomac',
-#                                            'Shenandoah', 'Roanoke Basin', 'James Basin',
-#                                            'New', 'Big Sandy', 'Clinch-Powell', 'Holston', 
-#                                       "Virginia"),
-#                                     'DO'#'VSCIVCPMI'
-#                                     ) %>% 
+# organizedStats <- dataOrgInterquartileRange(dat,
+#                                             subpopulations = c('Chowan', 'Rappahannock', 'York', 'Potomac',
+#                                                                'Shenandoah', 'Roanoke Basin', 'James Basin',
+#                                                                'New', 'Big Sandy', 'Clinch-Powell', 'Holston',
+#                                                                "Virginia"),
+#                                             indicator = 'FN_PCT'#'DO'#'VSCIVCPMI'
+#                                     ) %>%
 #   mutate(Subpopulation = case_when(Subpopulation == 'Roanoke Basin' ~ "Roanoke",
 #                                    Subpopulation == 'James Basin' ~ "James",
 #                                    TRUE ~ as.character(Subpopulation)),
 #     Subpopulation = as.factor(Subpopulation),
-#          Indicator = as.factor(Indicator))
+#          Indicator = as.factor(Indicator)) %>% 
+#                              replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0))
 
 
 # function to plot interquartile range by subpopulation and indicator
@@ -342,14 +343,15 @@ micromapInterquartileRange <- function(organizedStats, map.table,  indicatorRang
 #                                                        'Shenandoah', 'Roanoke Basin', 'James Basin',
 #                                                        'New', 'Big Sandy', 'Clinch-Powell', 'Holston',
 #                                                        "Virginia"),
-#                                                      'DO'#'VSCIVCPMI'#'TotHab'#'TP'#'VSCIVCPMI'
+#                                                      'FN_PCT'#'DO'#'VSCIVCPMI'#'TotHab'#'TP'#'VSCIVCPMI'
 #                                                      ) %>%
 #                              mutate(Subpopulation = case_when(Subpopulation == 'Roanoke Basin' ~ "Roanoke",
 #                                                               Subpopulation == 'James Basin' ~ "James",
 #                                                               TRUE ~ as.character(Subpopulation)),
 #                                     Subpopulation = as.factor(Subpopulation),
-#                                     Indicator = as.factor(Indicator)),
-#                            map.tableBasin,
+#                                     Indicator = as.factor(Indicator)) %>% 
+#                              replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0)),
+#                            map.table = map.tableBasin,
 #                            indicatorRanges = indicatorRanges,
 #                            dropVA = F)
 

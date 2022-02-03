@@ -169,7 +169,8 @@ shinyServer(function(input, output, session) {
                                                                     Subpopulation == 'James Basin' ~ "James",
                                                                     TRUE ~ as.character(Subpopulation)),
                                           Subpopulation = as.factor(Subpopulation),
-                                          Indicator = as.factor(Indicator)),
+                                          Indicator = as.factor(Indicator)) %>% 
+                                   replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0)), # replace NA with 0 to allow IR to plot
                                  map.tableBasin,
                                  indicatorRanges = indicatorRanges,
                                  dropVA = input$micromapDropVA)    }    })
@@ -183,7 +184,8 @@ shinyServer(function(input, output, session) {
                                                                     Subpopulation == "Blue Ridge Mountains" ~ "Blue Ridge",
                                                                     TRUE ~ as.character(Subpopulation)),
                                           Subpopulation = as.factor(Subpopulation),
-                                          Indicator = as.factor(Indicator)),
+                                          Indicator = as.factor(Indicator)) %>% 
+                                   replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0)), # replace NA with 0 to allow IR to plot
                                  map.tableEcoregion,
                                  indicatorRanges = indicatorRanges,
                                  dropVA = input$micromapDropVA) } })
@@ -195,7 +197,8 @@ shinyServer(function(input, output, session) {
                                                            VAHUSBSubpopulations,
                                                            input$micromapParameterChoice) %>%
                                    mutate(Subpopulation = as.factor(Subpopulation),
-                                          Indicator = as.factor(Indicator)),
+                                          Indicator = as.factor(Indicator)) %>% 
+                                   replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0)), # replace NA with 0 to allow IR to plot
                                  map.tableVAHUSB,
                                  indicatorRanges = indicatorRanges,
                                  dropVA = input$micromapDropVA) } })
