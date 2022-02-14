@@ -63,7 +63,7 @@
 # }
 # 
 # # CDF data
-# dat <- read.csv('data/IR2022/allCDF.csv')# CDF results
+# probCDF <- read.csv('data/IR2022/allCDF.csv')# CDF results
 
 
 # indicator information
@@ -273,7 +273,7 @@ dataOrgInterquartileRange <- function(dat, # CDF data with all indicators and su
     }
   return(statsbasin)
 }
-# organizedStats <- dataOrgInterquartileRange(dat,
+# organizedStats <- dataOrgInterquartileRange(probCDF,
 #                                             subpopulations = c('Chowan', 'Rappahannock', 'York', 'Potomac',
 #                                                                'Shenandoah', 'Roanoke Basin', 'James Basin',
 #                                                                'New', 'Big Sandy', 'Clinch-Powell', 'Holston',
@@ -284,7 +284,7 @@ dataOrgInterquartileRange <- function(dat, # CDF data with all indicators and su
 #                                    Subpopulation == 'James Basin' ~ "James",
 #                                    TRUE ~ as.character(Subpopulation)),
 #     Subpopulation = as.factor(Subpopulation),
-#          Indicator = as.factor(Indicator)) %>% 
+#          Indicator = as.factor(Indicator)) %>%
 #                              replace_na(list(x25 = 0, x50 = 0, x75 = 0,  n = 0))
 
 
